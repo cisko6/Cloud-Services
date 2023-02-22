@@ -1,35 +1,39 @@
-AwsTemplateFormatVesrion: 2010-09-09
-
-Descripion: Basic Network
-
-Parameters: 
-  VpcCidr:
-    Description: VpcCidr
-    Type: String
-    Default: 10.20.0.0/16
-  Environment:
-    Description: environment
-    Type: String
-    Default: lab
-
-  Project:
-    Description: project
-    Type: String
-    Default: FRI
-
-Resources: 
-  Vpc: 
+AWSTemplateFormatVersion: 2010-09-09
+  Description: Basic Network
+  Parameters:
+   VpcCidr:
+     Description: VpcCidr
+      Type: String
+      Default: 10.20.0.0/16
+Enviroment:
+  Description: enviroment
+  Type: String
+  Default: lab
+Project:
+  Description: project
+  Type: String
+  Default: FRI
+Resoures:
+  Vpc:
   Type: AWS::EC2::VPC
   Properties:
-    CidrBlock: !Ref VpcCidr
-    EnableDnsSupport: true
-    EnableDnsHostnames: true
-    Tags:
-     - Key: stack
-       Value: production
-
-myInternetGateway:
-    Type: AWS::EC2::InternetGateway
+  CidrBlock: !Ref VpcCidr
+  EnableDnsSupport: true
+  EnableDnsHostnames: true
+  InstanceTenancy: default
+  Tags:
+  - { Key: Name, Value: !Join [ '-', [ !Ref Enviroment, vpc] ] }
+  - { Key: Enviroment, Value: !Ref Enviroment }
+  - { Key: Project, Value: !Ref Project }
+InternetGateway:
+   Type: AWS::EC2::InternetGateway
     Properties:
-      Tags:
-
+     Tags:
+     - { Key: Name, Value: !Join [ '-', [ !Ref Enviroment, igw] ] }
+     - { Key: Enviroment, Value: !Ref Enviroment }
+      - { Key: Project, Value: !Ref Project }
+       InternetAttachGateway:
+        Type: AWS::EC2::VPCGatewayAttachment
+         Properties:
+         VpcId: !Ref Vpc
+         InternetGatewayId: !Ref InternetGateway
