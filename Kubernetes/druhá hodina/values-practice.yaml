@@ -1,0 +1,34 @@
+adminPassword: "Grafana#1"
+
+datasources:
+ datasources.yaml:
+   apiVersion: 1
+   datasources:
+   - name: Prometheus
+     type: prometheus
+     url: my-prometheus-server.smh.svc.cluster.local:80
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards
+
+dashboards:
+  default:
+    kube-dash:
+      gnetId: 6663
+      url:
+      revision: 1
+      datasource: Prometheus
+    kube-cluster-dash:
+      gnetId: 315
+      revision: 3
+      datasource: Prometheus

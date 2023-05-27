@@ -1,0 +1,201 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Cvicenie 3 - EC2 instances 
+
+###########################################################################
+# Useful CloudFormation docs
+###########################################################################
+# functions:         https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference.html
+# pseudo parameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html
+# pseudo attributes: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-product-attribute-reference.html
+# template sections: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html
+###########################################################################
+
+Parameters:
+  Project:
+    Description: Project
+    Type: String
+    Default: FRI
+
+  Environment:
+    Description: Environment
+    Type: String
+    Default: lab
+
+  NetworkStackName:
+    Description: Name of parent network CloudFormation stack
+    Type: String
+    Default: basic-network
+
+  ImageId:
+    Description: AMI (Amazon Machine Image) ID
+    Type: String
+    # more info: https://docs.amazonaws.cn/en_us/AWSEC2/latest/UserGuide/finding-an-ami.html
+    # list of usable AMIs can be found in AWS console -> EC2 -> AMI Catalog
+    # Amazon Linux 2 (HVM), Kernel 5.10, SSD Volume Type, eu-west-1
+    Default: ami-006dcf34c09e50022
+
+  InstanceType:
+    Description: Instance type (number of vCPUs, memory, bandwidth, etc.)
+    Type: String
+    # "t3" family = General purpose, Intel Xeon Platinum 8000 series; "medium" size = 2 vCPUs, 4 GB memory
+    # more info: https://aws.amazon.com/ec2/instance-types/t3/
+    Default: t3.medium
+
+  IamInstanceProfileName:
+    Description: Instance IAM profile name
+    Type: String
+    Default: c76725a1578383l3617023t1w399864359231-SsmRoleInstanceProfile-YxsK62eYAwGh
+    # it's unique in each account. can be found in IAM service as AmazonSSMRoleForInstancesQuickSetup (part of Instance profile ARN)
+    # e.g. c76725a1578383l3622172t1w333290784692-SsmRoleInstanceProfile-apue5UBzE6mA
+
+Resources:
+###########################################################################
+### Part 1 - security groups (firewall) & SSH key pair
+###########################################################################
+
+  # AWS docs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+  SecurityGroupForBastion:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SecurityGroup for bastion
+      VpcId:
+        Fn::ImportValue: !Sub ${NetworkStackName}-VpcId
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 22,   ToPort: 22,   CidrIp: 178.143.38.123/32, Description: Home IP - SSH }
+      SecurityGroupEgress:
+        - { IpProtocol: tcp, FromPort: 22,  ToPort: 22,  CidrIp: { Fn::ImportValue: !Sub '${NetworkStackName}-VpcCidr' }, Description: SSH - VPC }
+      Tags:
+        - { Key: Name, Value: Bastion_SG }
+        - { Key: Environment, Value: !Ref Environment }
+        - { Key: Project, Value: !Ref Project }
+
+  SecurityGroupForPrivateInstances:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SecurityGroup for instances in Private subnets
+      VpcId:
+        Fn::ImportValue: !Sub ${NetworkStackName}-VpcId
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 22,  ToPort: 22,  CidrIp: { Fn::ImportValue: !Sub '${NetworkStackName}-VpcCidr' }, Description: SSH - VPC }
+
+      Tags:
+        - Key: Name
+          Value: SecurityGroupForPrivateInstances
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref Project
+
+  # AWS docs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-keypair.html
+  # private key (to import to your local machine) will be able to find in AWS console -> Systems Manager -> Parameter Store
+  # with parameter name '/ec2/keypair/{key_pair_id}'
+  SSHKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: SSHKeyPair
+      KeyType: rsa
+      Tags:
+        - Key: Name
+          Value: SSHKeyPair
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref Project
+
+  SSHKeyPair2:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: SSHKeyPair2
+      KeyType: rsa
+      Tags:
+        - Key: Name
+          Value: SSHKeyPair2
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref Project
+
+###########################################################################
+### Part 2- static EC2 instances
+###########################################################################
+
+  # AWS docs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-instance.html
+  BastionA:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-PublicSubnetAId"
+      SecurityGroupIds:
+        - !Ref SecurityGroupForBastion
+      ImageId: !Ref ImageId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref SSHKeyPair
+      IamInstanceProfile: !Ref IamInstanceProfileName
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            echo 1 > /proc/sys/net/ipv4/ip_forward
+            echo "Hello world."
+            echo "This instance was created in environment ${Environment} in region ${AWS::Region}"
+          - Environment: !Ref Environment
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp2
+            VolumeSize: 30
+            Encrypted: true
+      Tags:
+        - Key: Name
+          Value: BastionA
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref Project
+
+
+  PrivateInstanceA:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-PrivateSubnetAId"
+      SecurityGroupIds:
+        - !Ref SecurityGroupForPrivateInstances
+      ImageId: !Ref ImageId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref SSHKeyPair
+      IamInstanceProfile: !Ref IamInstanceProfileName
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            yum -y update
+            yum -y install httpd
+            systemctl enable httpd
+            systemctl start httpd
+            echo "Hello world."
+            echo "This instance was created in environment ${Environment} in region ${AWS::Region}"
+          - Environment:
+              !Ref Environment
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp2
+            VolumeSize: 30
+            Encrypted: true
+      Tags:
+        - Key: Name
+          Value: PrivateInstance
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref Project
+
+  
+
+
+        

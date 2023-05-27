@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Basic Network
+
+Parameters:
+  VpcCidr:
+    Description: VpcCidr
+    Type: String
+    Default: 10.20.0.0/16
+  Enviroment:
+    Description: enviroment
+    Type: String
+    Default: lab
+  Project:
+    Description: project
+    Type: String
+    Default: FRI
+
+Resources: 
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+       - { Key: Name, Value: !Join [ '-', [ !Ref Enviroment, vpc] ] }
+       - { Key: Enviroment, Value: !Ref Enviroment }
+       - { Key: Project, Value: !Ref Project }
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - { Key: Name, Value: !Join [ '-', [ !Ref Enviroment, igw] ] }
+        - { Key: Enviroment, Value: !Ref Enviroment }
+        - { Key: Project, Value: !Ref Project }
+  InternetAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+PublicSubnetA:
+  Type: AWS::EC2::Subnet
+  Properties:
+    Vpcid: !Ref Vpc
+    CidrBlock: !Select { !Ref PublicSubnetACidrBlock, !Cidr [ !Ref VpcCidr, 256, 8 ] }
+    AvailabilityZone: !Select { 0, !GetAZs '' }
+    MapPublicIponLaunch: true
+    Tags:
+    

@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Cvicenie 5 - CloudWatch alarms
+###########################################################################
+# Useful CloudFormation docs
+###########################################################################
+# functions:         https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference.html
+# pseudo parameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html
+# pseudo attributes: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-product-attribute-reference.html
+# template sections: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html
+###########################################################################
+Parameters:
+  EC2StackName:
+    Description: Name of parent EC2 CloudFormation stack
+    Type: String
+    Default: ec2
+Resources:
+  PrivateASGHighCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: PrivateASGHighCPUAlarm
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Threshold: 90
+      Period: 30
+      EvaluationPeriods: 2
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value:
+            Fn::ImportValue: !Sub ${EC2StackName}-PrivateAutoScalingGroupId
+      AlarmActions:
+        - !Ref PrivateASGScaleUpPolicy
+  PrivateASGScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName:
+        Fn::ImportValue: !Sub ${EC2StackName}-PrivateAutoScalingGroupId
+      PolicyType: SimpleScaling
+      AdjustmentType: ChangeInCapacity
+      ScalingAdjustment: 2
