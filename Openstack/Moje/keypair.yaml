@@ -1,0 +1,29 @@
+heat_template_version: 2013-05-23
+
+#parameters:
+#  meno_keypair:
+#    type: string
+#    label: Zadaj nazov key-pairu
+
+resources:
+  my_key:
+    type: OS::Nova::KeyPair
+    properties:
+      save_private_key: true
+      name: my_key
+
+  PC3:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: compute1
+      flavor: linux
+      image: Debian_11_Openstack
+      name: pc3-testkeypair
+      key_name: { get_resource: my_key }
+      networks: 
+        - network: ext-net
+
+outputs:
+  private_key:
+    description: Private key
+    value: { get_attr: [ my_key, private_key ] }

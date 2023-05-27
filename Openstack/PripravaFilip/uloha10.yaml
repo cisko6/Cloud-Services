@@ -1,0 +1,61 @@
+heat_template_version: ocata
+
+parameters:
+  name:
+    type: string
+    label: Label vo formulari
+    description: Pomocny popis skryty
+
+  number_Of_Instances:
+    type: number
+    label: Pocet instancii
+    description: Pozadovany pocet instancii
+    default: 2
+
+  image:
+    type: string
+    default: "cirros"
+
+  flavor:
+    type: string
+    default: "linux"  
+
+  AZ:
+    type: string
+    default: "compute1"
+
+resources:
+
+  ULOHA10_SSH_KEY:
+    type: OS::Nova::KeyPair
+    properties:
+      save_private_key: true
+      name: ULOHA10_SSH_KEY
+
+  Sec_GroupBoth:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: icmp
+
+  instance_group:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: number_Of_Instances }
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          availability_zone: {get_param: AZ}
+          flavor: {get_param: flavor}
+          security_groups: [get_resource: Sec_GroupBoth]
+          image: {get_param: image}
+          key_name: { get_resource: ULOHA10_SSH_KEY }
+          networks: 
+            - network: "ext-net"
+
+outputs:
+  private_key:
+    description: Private key
+    value: { get_attr: [ ULOHA10_SSH_KEY, private_key ] }

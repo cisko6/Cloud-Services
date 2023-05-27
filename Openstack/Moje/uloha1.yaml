@@ -1,0 +1,109 @@
+heat_template_version: 2013-05-23
+
+resources:
+  sec_group1:
+      type: OS::Neutron::SecurityGroup
+      properties:
+        name: sec_group1_uloha_1
+        rules: [{"direction": ingress, "protocol": icmp},
+                {"direction": egress, "protocol": icmp},
+
+                {"direction": ingress,  "port_range_min": 53, "port_range_max": 53,"protocol": tcp},
+                {"direction": egress,  "port_range_min": 53, "port_range_max": 53,"protocol": tcp},
+
+                {"direction": ingress,  "port_range_min": 53, "port_range_max": 53,"protocol": udp},
+                {"direction": egress,  "port_range_min": 53, "port_range_max": 53,"protocol": udp},
+                
+                {"direction": ingress,  "port_range_min": 22, "port_range_max": 22,"protocol": tcp},
+                {"direction": egress,  "port_range_min": 22, "port_range_max": 22,"protocol": tcp}]
+
+  sec_group2:
+      type: OS::Neutron::SecurityGroup
+      properties:
+        name: sec_group2_uloha_1
+        rules: [{"direction": ingress, "protocol": icmp},
+                {"direction": egress, "protocol": icmp},
+
+                {"direction": ingress,  "port_range_min": 80, "port_range_max": 80,"protocol": tcp},
+                {"direction": egress,  "port_range_min": 80, "port_range_max": 80,"protocol": tcp},
+
+                {"direction": ingress,  "port_range_min": 22, "port_range_max": 22,"protocol": tcp},
+                {"direction": egress,  "port_range_min": 22, "port_range_max": 22,"protocol": tcp}]
+
+  Net1:
+    type: OS::Neutron::Net
+    properties:
+      name: net-is4
+
+  Subnet1:
+    type: OS::Neutron::Subnet
+    depends_on: Net1
+    properties:
+      cidr: 10.0.0.0/24
+      ip_version: 4
+      name: Subnet_1
+      network: { get_resource: Net1 }
+
+
+
+  Router:
+      type: OS::Neutron::Router
+      properties:
+        name: Router_1
+        external_gateway_info: 
+          network: ext-net
+
+  Router_interface:
+    type: OS::Neutron::RouterInterface
+    depends_on: Router
+    properties:
+      router: { get_resource: Router }
+      subnet: { get_resource: Subnet1 }
+
+
+
+  port_PC1:
+    type: OS::Neutron::Port
+    depends_on: Net1
+    properties:
+      network: { get_resource: Net1 }
+      fixed_ips:
+        - subnet_id: { get_resource: Subnet1 }
+      security_groups: [ { get_resource: sec_group1 } ]
+
+  PC1:
+    type: OS::Nova::Server
+    depends_on: port_PC1
+    properties:
+      availability_zone: compute1
+      flavor: linux
+      image: Debian_11_Openstack
+      name: jergus
+      networks: 
+        - port: { get_resource: port_PC1 }
+
+  port_PC2:
+    type: OS::Neutron::Port
+    depends_on: Net1
+    properties:
+      network: { get_resource: Net1 }
+      fixed_ips:
+        - subnet_id: { get_resource: Subnet1 }
+      security_groups: [ { get_resource: sec_group2 } ]
+
+  PC2:
+    type: OS::Nova::Server
+    depends_on: port_PC2
+    properties:
+      availability_zone: compute1
+      flavor: linux
+      image: Debian_11_Openstack
+      name: maros
+      networks: 
+        - port: { get_resource: port_PC2 }
+
+outputs:
+  #instance_ip:
+  IP_diega_2:
+    description: milosko marosko jergusko
+    value: { get_attr: [ PC2, show, addresses, { get_attr: [Net1, name] } ] }

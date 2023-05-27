@@ -1,0 +1,175 @@
+heat_template_version: ocata
+
+parameters:
+  name:
+    type: string
+    label: Label vo formulari
+    description: Pomocny popis skryty
+
+  image:
+    type: string
+    default: "Debian_11_Openstack"
+
+  flavor:
+    type: string
+    default: "linux"  
+
+  AZ:
+    type: string
+    default: "compute1"
+  
+  instances:
+    type: comma_delimited_list
+    label: Instances array
+    default: "apache, proxy"
+
+resources:
+  My_SSH_Key:
+    type: OS::Nova::KeyPair
+    properties:
+      save_private_key: true
+      name: My_SSH_Key
+
+  Internal_net:
+    type: OS::Neutron::Net
+
+  Internal_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: Internal_net }
+      cidr: "10.0.0.0/24"
+      dns_nameservers: [ "158.193.152.4", "8.8.4.4" ]
+      ip_version: 4
+
+  Internal_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info: { network: ext-net }
+
+  Internal_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: Internal_router }
+      subnet: { get_resource: Internal_subnet }
+
+  Sec_Group1:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: icmp
+
+  Apache_group:
+    type: OS::Neutron::SecurityGroup
+    depends_on: jumpSRV
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix:
+            list_join: ['/', [ { get_attr: [jumpSRV, first_address] } , '32']]
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: icmp
+        - remote_ip_prefix: { get_attr: [Internal_subnet, cidr] }
+          protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+
+  Proxy_group:
+    type: OS::Neutron::SecurityGroup
+    depends_on: Apache2_SRV
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 
+            list_join: ['/', [ { get_attr: [Apache2_SRV, first_address] } , '32']]
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: icmp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+
+  jumpSRV:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: {get_param: AZ}
+      flavor: {get_param: flavor}
+      security_groups: [get_resource: Sec_Group1]
+      image: {get_param: image}
+      key_name: { get_resource: My_SSH_Key }
+      networks: 
+        - network: { get_resource: Internal_net}
+    
+  Apache2_SRV:
+    type: OS::Nova::Server
+    depends_on: Apache_group
+    properties:
+      availability_zone: {get_param: AZ}
+      flavor: {get_param: flavor}
+      security_groups: [get_resource: Apache_group]
+      image: {get_param: image}
+      key_name: { get_resource: My_SSH_Key }
+      networks: 
+        - network: { get_resource: Internal_net}
+      metadata: |
+        #!/bin/bash
+        sudo su -
+        apt update –y && apt upgrade -y
+        echo "OS Upgraded!"
+        apt install –y httpd
+        systemctl start httpd.service
+        systemctl enable httpd.service
+        echo "httpd enabled"  
+            
+  Proxy_SRV:
+    type: OS::Nova::Server
+    depends_on: Proxy_group
+    properties:
+      availability_zone: {get_param: AZ}
+      flavor: {get_param: flavor}
+      security_groups: [get_resource: Proxy_group]
+      image: {get_param: image}
+      key_name: { get_resource: My_SSH_Key }
+      networks: 
+        - network: { get_resource: Internal_net}
+      metadata: {
+        #!/bin/bash
+        sudo su -,
+        apt-get -y update && apt-get upgrade -y,
+        echo "OS Upgraded!",
+        apt-get -y install squid3,
+        #curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/squid-conf" -H "Metadata-Flavor: Google" -o squid.conf
+        #mv /etc/squid/squid.conf /etc/squid/squid.conf.old
+        #mv ./squid.conf /etc/squid/
+        systemctl enable squid,
+        systemctl restart squid,
+        echo "ufw allow 3128/tcp",
+        systemctl status squid,
+        echo "squid enabled",
+      }
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ext-net
+
+  association:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: floating_ip }
+      port_id: { get_attr: [ jumpSRV , addresses, {get_resource: Internal_net}, 0, port] }
+
+outputs:
+  private_key:
+    description: Private key
+    value: { get_attr: [ My_SSH_Key, private_key ] }

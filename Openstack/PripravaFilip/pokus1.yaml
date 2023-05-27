@@ -1,0 +1,88 @@
+heat_template_version: ocata
+
+parameters:
+  name:
+    type: string
+    label: Label vo formulari
+    description: Pomocny popis skryty
+
+resources:
+  My_SSH_Key:
+    type: OS::Nova::KeyPair
+    properties:
+      save_private_key: true
+      name: My_SSH_Key
+
+  Internal_net:
+    type: OS::Neutron::Net
+
+  Internal_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: Internal_net }
+      cidr: "192.168.88.0/24"
+      dns_nameservers: [ "158.193.152.4", "8.8.4.4" ]
+      ip_version: 4
+
+  Internal_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info: { network: ext-net }
+
+  Internal_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: Internal_router }
+      subnet: { get_resource: Internal_subnet }
+
+  Sec_Group1:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: icmp          
+
+  stroj1:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: compute1
+      flavor: nano
+      security_groups: [get_resource: Sec_Group1]
+      image: cirros
+      key_name: { get_resource: My_SSH_Key }
+      networks: 
+#        - network: ext-net
+        - network: { get_resource: Internal_net}
+
+  stroj2:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: compute1
+      flavor: nano
+      security_groups: [get_resource: Sec_Group1]
+      image: cirros
+      key_name: { get_resource: My_SSH_Key }
+      networks: 
+#        - network: ext-net
+        - network: { get_resource: Internal_net}
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ext-net
+
+  association:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: floating_ip }
+      port_id: {get_attr: [ stroj1 , addresses, {get_resource: Internal_net}, 0, port]}
+
+outputs:
+  private_key:
+    description: Private key
+    value: { get_attr: [ My_SSH_Key, private_key ] }

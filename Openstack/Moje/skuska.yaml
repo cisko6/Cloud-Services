@@ -1,0 +1,96 @@
+heat_template_version: ocata
+
+parameters:
+  AZ:
+    label: Availability zone
+    type: string
+    default: compute1
+
+  Flavor:
+    label: Flavor
+    type: string
+    default: linux
+
+  Image:
+    label: Image
+    type: string
+    default: Debian_11_Openstack
+
+resources:
+  Net:
+    type: OS::Neutron::Net
+    properties:
+      name: Net_skuska
+
+  Subnet1:
+    type: OS::Neutron::Subnet
+    depends_on: Net
+    properties:
+      cidr: 10.0.0.0/24
+      ip_version: 4
+      name: Subnet1_skuska
+      network: { get_resource: Net }
+
+  Subnet2:
+    type: OS::Neutron::Subnet
+    depends_on: Net
+    properties:
+      cidr: 192.168.0.0/24
+      ip_version: 4
+      name: Subnet2_skuska
+      network: { get_resource: Net }
+
+  Router:
+    type: OS::Neutron::Router
+    properties:
+      name: Router_skuska
+      external_gateway_info: 
+        network: ext-net
+
+  Router_interface1:
+    type: OS::Neutron::RouterInterface
+    depends_on: [Router, Subnet1]
+    properties:
+      router: { get_resource: Router }
+      subnet: { get_resource: Subnet1 }
+
+  Router_interface2:
+    type: OS::Neutron::RouterInterface
+    depends_on: [Router, Subnet2]
+    properties:
+      router: { get_resource: Router }
+      subnet: { get_resource: Subnet2 }
+
+  PC1:
+    type: OS::Nova::Server
+    depends_on: Subnet1
+    properties:
+      availability_zone: { get_param: AZ }
+      flavor: { get_param: Flavor }
+      image: { get_param: Image }
+      name: jergus
+      networks: 
+        - subnet: { get_resource: Subnet1 }
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        apt-get update -y
+        apt-get upgrade -y
+        apt-get install mc -y
+
+  PC2:
+    type: OS::Nova::Server
+    depends_on: Subnet2
+    properties:
+      availability_zone: { get_param: AZ }
+      flavor: { get_param: Flavor }
+      image: { get_param: Image }
+      name: milos
+      networks: 
+        - subnet: { get_resource: Subnet2 }
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        apt-get update -y 
+        apt-get upgrade -y
+        apt-get install mc -y

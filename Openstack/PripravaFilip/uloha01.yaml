@@ -1,0 +1,129 @@
+heat_template_version: ocata
+
+parameters:
+  name:
+    type: string
+    label: Label vo formulari
+    description: Pomocny popis skryty
+
+  allow_Tenet:
+    type: boolean
+    label: Povolit telnet
+    description: Povolit telnet
+    default: false
+
+  image:
+    type: string
+    default: "cirros"
+
+  flavor:
+    type: string
+    default: "linux"  
+
+  AZ:
+    type: string
+    default: "compute1"
+  
+  instances:
+    type: comma_delimited_list
+    label: Instances array
+    default: "apache, proxy"
+
+resources:
+  ULOHA1_SSH_KEY:
+    type: OS::Nova::KeyPair
+    properties:
+      save_private_key: true
+      name: ULOHA1_SSH_KEY
+
+  Internal_net:
+    type: OS::Neutron::Net
+
+  Internal_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: Internal_net }
+      cidr: "192.168.88.0/24"
+      dns_nameservers: [ "158.193.152.4", "8.8.4.4" ]
+      ip_version: 4
+
+  Internal_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info: { network: ext-net }
+
+  Internal_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: Internal_router }
+      subnet: { get_resource: Internal_subnet }
+
+  Sec_GroupBoth:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: icmp
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: {if: [get_param: allow_Tenet, 23, 22]}
+  
+  Sec_Group_DNS:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: tcp
+          port_range_min: 53
+          port_range_max: 53
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: udp
+          port_range_min: 53
+          port_range_max: 53
+
+  Sec_Group_Http:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: security-group_SSH_ICMP
+      rules:
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+        - remote_ip_prefix: 158.193.0.0/16
+          protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+  PC1:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: {get_param: AZ}
+      flavor: {get_param: flavor}
+      security_groups: [get_resource: Sec_GroupBoth, get_resource: Sec_Group_DNS]
+      image: {get_param: image}
+      key_name: { get_resource: ULOHA1_SSH_KEY }
+      networks: 
+        - network: { get_resource: Internal_net}
+  
+  SRV2:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: {get_param: AZ}
+      flavor: {get_param: flavor}
+      security_groups: [get_resource: Sec_GroupBoth, get_resource: Sec_Group_Http]
+      image: {get_param: image}
+      key_name: { get_resource: ULOHA1_SSH_KEY }
+      networks: 
+        - network: { get_resource: Internal_net}
+
+outputs:
+  private_key:
+    description: Private key
+    value: { get_attr: [ ULOHA1_SSH_KEY, private_key ] }
+  
+  IP_address:
+    description: IP address of the instance
+    value: [{ get_attr: [ PC1, first_address ] }, { get_attr: [ SRV2, first_address ] } ]
