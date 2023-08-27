@@ -1,0 +1,38 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-pods
+  ports:
+  - port: 3333
+    targetPort: 3000
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-pods
+  template:
+    metadata:
+      labels:
+        app: web-pods
+    spec:
+      containers:
+      - name: web-containers
+        image: cisko6/web-to-nginx:3.0.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 3000

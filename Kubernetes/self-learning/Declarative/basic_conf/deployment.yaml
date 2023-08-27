@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-name
+
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: pods_hello
+      
+  template:
+    metadata:
+      labels:
+        app: pods_hello
+    spec:
+      containers:
+      - name: hello-containers
+        image: cisko6/k8s-web-hello:2.0.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 3000
