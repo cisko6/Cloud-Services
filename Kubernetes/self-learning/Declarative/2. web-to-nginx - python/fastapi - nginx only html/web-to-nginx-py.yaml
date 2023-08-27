@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-web-py
+  name: service-web
 spec:
   type: LoadBalancer
   selector:
-    app: pod-web-py
+    app: pod-web
   ports:
   - port: 3333
     targetPort: 3000
@@ -15,20 +15,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deployment-web-py
+  name: deployment-web
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: pod-web-py
+      app: pod-web
   template:
     metadata:
       labels:
-        app: pod-web-py
+        app: pod-web
     spec:
       containers:
-      - name: container-web-py
-        image: cisko6/web-to-nginx-py
+      - name: container-web
+        image: cisko6/web-to-nginx
         resources:
           limits:
             memory: "128Mi"
