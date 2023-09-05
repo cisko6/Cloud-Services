@@ -1,0 +1,114 @@
+INGRESS
+	- namiesto 127.10.20.30:30000 bude my-app.com
+	- EXTERNAL - INGRESS CONTROLLER - INGRESS - SERVICE - POD
+	- neotvoríme IP adresu a port externemu svetu
+	- z ext -> IP:PORT sa namapuje na SERVICE
+
+INGRESS CONTROLER
+	- acts as a reverse proxy and load balancer, allowing you to define and manage the routing and traffic rules for incoming requests to different services running within your Kubernetes cluster.
+	- evaluates all the rules
+	- manages redirections
+	- entrypoint to cluster
+
+	- Cloud riešenia - používajú Cloud Load Balancer a poto mto ide do IC
+		- pros: nemusíme implementovať load balancer sami
+	- Bare Metal - musíme si sami nakonfigurovať entrypoint
+		- riešenia: 1) External Proxy Server - separate server
+						     - dáme mu public IP address a otvorene porty
+						     - žiadny z k8s serverov nebude mať publicly accessible IP address -> good security practice 
+						     - EXTERNAL - PROXY SERVER - Ingress Controller - ...
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+VOLUMES
+- PV nepatrí ani jednému namespacu -> je dostupný všetkým
+- pre databázy je lepšie remote storage (nie local) -> crashes
+
+Storage Class
+	- poskytuje PV dynamically, keď PVC claims it
+	- automaticky vytvára PV 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+VOLUME TYPES
+- vieme ich použiť na vytvorenie key:values, ale aj taktiež sa dajú použiť na vytvorenie files
+secretMap
+
+configMap
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SERVICES
+
+Cluster IP 
+	- aby nemusel mat kazdy POD svoju IP, bude cely deployment pod jednou Cluster IP
+	- pomocou Cluster IP sa vieme potom následne pripojiť na naše PODy v deploymente (Iba z NODE)
+	- pripojenie na deployment je možné iba vo vnútri kubernetes clusteri (tzn. nie z internetu)
+	- príklad: Ak máme SQL databázu, od ktorej nechceme aby bola otvorená internetu, vytvoríme Cluster IP Service pre tento deployment // ostatné deployments v kubernetes clusteri majú k nej prístup
+
+
+NodePort service 
+	- NodePort is a way to expose a service externally by allocating a port on each node in the cluster.
+	- pomocou NodePortu dokážeme sa pripojiť na DEPLOYMENT externe, pomocou random PORTu, ktorý mu bude pridelený
+
+
+LoadBalancer service
+	- LoadBalancer service is a type of service that exposes your application to the external world while automatically distributing incoming network traffic across multiple pods.
+	- distribuuje prevádzku na všetky PODy
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RESOURCES
+
+PersistentVolume (PV)
+	- je to iba úložisko, ktoré manažuje PVC
+
+PersistentVolumeClaim (PVC)
+	- is a request for storage by an application in a Kubernetes cluster
+	- minikube start --extra-config=apiserver.enable-admission-plugins="PersistentVolumeClaimResize,ResourceQuota" --extra-config=apiserver.runtime-config=api/all=true --feature-gates=ExpandInUsePersistentVolumes=true
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CONTROLLERS
+
+Deployment
+	- spravuje požadovaný počet replik v clusteri
+	- využíva sa pre aplikácie, ktoré musia byť škálovateľné hore alebo dole
+
+DaemonSet
+	- zabezpečuje, že vybraný pod beží na všetkých(alebo niektorych) nodes v clusteri
+	- využíva sa vtedy, keď chceme aby špecifická úloha bola na každej NODE -> monitoring agents, logging, networking components
+
+StatefulSets
+	- manažujú stateful aplikácie -> stateful - klient aj server si uchovávajú o sebe údaje
+	- využívajú sa prevažne na databázy, ale aj na workloads, kde dôležité zachovať integrita a indentita údajov
+
+HorizontalPodAutoscaler (HPA)
+	- automaticky upravuje počet replík v deploymente (based on CPU usage)
+
+Job
+	- využíva sa na manažovanie a dokončenie PODov so špecifickou úlohou
+	- používa sa na short-lived úlohy
+	- keď dokončí svoj job (completed), tak sa automaticky vymaže
+CronJob
+	- umožňuje NAPLÁNOVAŤ a automatizovať vykonávanie úloh v určených intervaloch
+	- využíva sa hlavne na BACKUPY, synchronizácia dát,..
+-------
+VerticalPodAutoscaler (VPA)
+	- upravuje požiadavky na zdroje a limity pre kontajnery v podoch
+
+PodDisruptionBudget
+	- pomáha definovať, koľko PODs konkrétnej aplikácie môže byť súčasne prerušených počas udalosti ako su aktualizacie, udrzba,.. (čím sa zaisťuje vysoká dostupnosť)
+
+ResourceQuota
+	- allow you to specify limits on resource consumption within namespaces
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

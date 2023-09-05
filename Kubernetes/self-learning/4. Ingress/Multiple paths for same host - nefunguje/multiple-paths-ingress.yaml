@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multiple-paths-ingress
+spec:
+  rules:
+  - host: dashboard.com
+    http:
+      paths:
+      - path: /mongodb
+        pathType: Prefix
+        backend:
+          service:
+            name: mongo-express-service
+            port: 
+              number: 30000  # 8081
+      - path: /nginx
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port: 
+              number: 80
+  defaultBackend:
+    service:
+      name: nginx-service
+      port:
+        number: 80

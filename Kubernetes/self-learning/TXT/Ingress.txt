@@ -1,0 +1,25 @@
+AN INGRESS RESOURCE CAN ONLY REFER TO SERVICES IN THE SAME NAMESPACE AS THE INGRESS.
+
+INGRESS CONTROLLER
+	- minikube addons enable ingress - installs ingress controller in minikube (k8s riešenie -> Ingress-Nginx Controller)
+	- kubectl get pod -n kube-system - uvidíme nainštalovaný nginx IC
+
+MAKE DASHBOARD EXTERNAL
+	- minikube dashboard -> vytvorenie dashboardy
+	- k get namespaces -> k get all -n kubernetes-dashboard
+	- VYTVORIT YAML - apply
+	- k get ingress dashboard-ingress -n kubernetes-dashboard --watch
+	- PRIDAT CESTU DO /ETC/HOSTS
+		- C:\Windows\System32\drivers\etc
+		- spraviť nový poznámkový blok (otvoriť v správcovi úloh)
+		- doňho nakopírovať celý hosts file
+		- vymazať starý hosts file
+		- do nového pripísať IP adresu z štvrtej pomlčky a za tým dashboard.com
+		- 172.23.245.232 dashboard.com
+	- otvoriť na webe dashboard.com
+
+Môžeme vidieť pri zadaní príkazu nižšie, že je tam "Default bakcend"
+	- k describe ingress dashboard-ingress -n kubernetes-dashboard
+	- ked príde request do kubernetes cluster a nepozná ho žiadny backend, tak sa použije default backend (chybová hláška)
+	- to znamená, že keď zadáme do URL niečo, čo stránka nepozná, tak sa vypíše default backend
+

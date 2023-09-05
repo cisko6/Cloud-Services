@@ -1,0 +1,59 @@
+# SECRET
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret-mosquitto
+type: Opaque
+data:
+  secret.file: |
+    dHZvanRhdGtvcmVjb3Jkcw==
+
+---
+# CONFIGMAP
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-mosquitto
+data:
+  mosquitto.conf: |
+    XDDD
+    xdddd
+    alooo
+
+---
+#DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:1.6.2
+        ports:
+        - containerPort: 1883
+        volumeMounts:
+        - name: my-configmap
+          mountPath: /mosquitto/config
+        - name: my-secret
+          mountPath: /mosquitto/secret  # secret zložka neexistuje - ale vytvori ju
+          readOnly: true
+      volumes:
+        - name: my-configmap
+          configMap:
+            name: config-mosquitto
+        - name: my-secret
+          secret:
+            secretName: secret-mosquitto
+            items:
+              - key: secret.file
+                path: super-secret.file  # nazov path v contajneri (môžeme si vymyslieť)

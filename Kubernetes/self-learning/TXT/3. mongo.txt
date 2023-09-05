@@ -1,0 +1,28 @@
+ako zistiť mongoDB port? 
+	- Docker stránka -> mongo -> Connect to MongoDB from another Docker container
+
+ako zistiť Environment Variables? (MONGO_INITDB_ROOT_USERNAME, MONGO_INITDB_ROOT_PASSWORD, MONGO_INITDB_DATABASE)
+	- Docker stránka -> mongo -> Environment Variables
+
+SERVICE MONGODB
+	- port - service port
+	- targetPort - port of container
+
+kubectl get all | grep mongodb
+
+SERVICE MONGO-EXPRESS
+	- type: LoadBalancer
+	- nodePort: (port for external IP address IN RANGE 30 000 - 32767)
+
+-------------------------------------------------------------------------------
+zistenie zašifrovaneho mena a hesla
+	- git bash -> echo -n 'username' | base64
+
+NAMESPACES
+	- máme namespace ahoj a uwu
+	- z jedného NS nemôžme prístupiť k resources druhého, IBA SERVICE je zdieľaný medzi NSs
+	- máme configmap, kde key:value -> database_url: my-sqlservice.ahoj -> Najptv SERVICE, potom .NAMESPACE
+
+	- VOLUMES are not namespaced
+
+	- prepínanie medzi NSs -> brew install kubectx -> kubens -> kubens [nazov_namespacu]

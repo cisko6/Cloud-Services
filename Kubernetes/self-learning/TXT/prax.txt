@@ -1,0 +1,211 @@
+https://www.youtube.com/watch?v=d6WC5n9G_sM
+
+CLUSTER > NODE > POD > CONTAINER
+node = server (geograficky zvyčajne bližšie aby fungovali faster)
+
+používať GIT BASH pre aliasy
+VYTVORENIE ALIASU a DOCKER ERRORS
+	-alias k="kubectl"
+	- docker context ls
+	- docker context use default
+
+Defaultne keď stiahneme minikube tak vytvorí len jednu cluster - jednu node
+
+minikube = cluster
+kubectl = spôsob, akým sa komunikuje medzi nodes (nefunguje kubectl príkaz vo vnútri node)
+
+DIDN'T WORK - ssh docker@172.24.249.116 (password tcuser)
+WORKED - minikube ssh
+
+minikube - status
+	 - start --driver=hyperv
+	 - ip
+
+docker ps - vypíše všetky docker containers
+
+kubectl cluster-info - informácie o clusteri
+
+kubectl get nodes - vráti všetky nodes v clusteri
+kubectl get pods
+kubectl get namespaces
+
+kubectl get pods --namespace=kube-system[nazov_namespacu] - vráti všetky pody v konkrétnom namespaci
+kubectl get pods -o wide  - uvidíme aj IP adresu PODu
+
+create pod manually
+	- kubectl run nginx[nazov_podu] --image=nginx
+	- in order to create container it has to pull an image from docker hub
+
+kubectl describe pod nginx
+
+# na to aby sme sa connectli na pod, potrebujeme vytvoriť services in kubernetes
+
+docker ps | grep nginx - (príkaz na NODE)
+
+
+# containery v pode si zdieľajú namespaces
+
+PRIPOJENIE DO KONTAINERU
+	- pozriet si v node docker ps
+	- z tadial vybrat konkretny kontainer
+	- jeho id 7de021ea6c87
+	- docker exec -it 7de021ea6c87 sh
+
+VNUTRI KONTAINERU 
+	- hostname
+	- hostname -i - získame IP adresu
+	- curl 10.244.0.3 - dostaneme sa na nginx html 
+
+curl 10.244.0.3 - nie je možné vykonať z nášho počítača - lebo funguje iba v NODE
+
+DELETE POD 
+	- kubectl delete pod nginx[nazov_podu]
+
+DEPLOYMENT - a template for creating pods
+CREATE DEPLOYMENT
+	- k create deployment nginx-deployment[nazov_deploymentu] --image=nginx # môžme aj --replicas 3
+	- k get deployments
+	- k get pods 	- vytvorila sa automaticky POD a teraz tá POD je manažovaná deploymentom
+	- k describe deployment nginx-deployment[nazov_deploymentu]
+	# pods are managed by deployment (pods are assigned to deployment)
+	- k scale deployment nginx-deployment --replicas=5	- vytvorenie 5 replík deploymentu
+	- k get pods -o wide	- vidíme, že každý pod má inú IP
+
+ak chceme deployment otvoriť internetu - potrebujeme externú IP adresu - load balancer IP (sú assigned by cloud providers)
+				       - dá sa cez - Node port
+
+Cluster IP service - aby nemusel mat kazdy pod svoju IP, bude cely deployment pod jednou Cluster IP
+		- pomocou Cluster IP sa vieme potom následne pripojiť na naše PODy v deploymente
+		- pripojenie na deployment je možné iba vo vnútri kubernetes clusteri (tzn. nie z internetu)
+		- príklad: Ak máme SQL databázu, od ktorej nechceme aby bola otvorená internetu, vytvoríme Cluster IP Service pre tento deployment // ostatné deployments v kubernetes clusteri majú k nej prístup
+
+EXPOSE DEPLOYMENT
+	- k expose deployment [nazov_deploymentu] --port=[external port] --target-port=[internal port](ak port v kontajneri je different ako external port - treba target port)
+	- k expose deployment nginx-deployment --port=8080 --target-port=80
+	- k get services (vidíme Cluster IP pre našu deployment)
+	- pripojenie do deploymentu using cluster ip - curl 10.100.230.233:8080 nie je možné z nášho lokálneho počítača, lebo je dostupná iba v kubernetes cluster
+	- delete deployment - k delete deployment [nazov_deploymentu]
+		- k delete service [nazov_servicu] # TREBA AJ SERVICE ZRUŠIŤ
+
+CUSTOM DOCKER IMAGE k8s-web-hello 
+	- stiahnuť vistual studio code, nodejs, docker
+	- vytvoríme index.mjs file, do ktorého napíšeme čo má robiť appka
+	- npm init -y (vytvorí nám package.json file v ktorom sa upravuje "scripts", kde namiesto test napíšeme start - "start": "node index.mjs")
+	- npm install express
+	- vymažeme node_modules folder
+	- docker build . -t cisko6/k8s-web-hello
+	- docker login
+	- docker push cisko6/k8s-web-hello (posledný krok - pushne do docker repositories custom image)
+	- docker images - uvidíme images v VSC(visual s.c.)
+	----------------------------------------------------------------------------------------------------------------------
+	- následne ideme do git bash
+	- vytvoríme deployment s našim custom imagom (k create deployment k8s-web-hello --image=cisko6/k8s-web-hello --replicas=3)
+	- expose-neme ho, aby sme mali cluster IP (k expose deployment k8s-web-hello --port=3000)
+	- zistíme IP (k get services)
+	- následne sa prihlásime do NODE
+	- curl [CLUSTER_IP]:[PORT] (curl 10.105.16.194:3000; echo)
+	- vidíme, že každým pokusom odpovedá iný POD
+
+	- vymazať docker image  - docker image ls -> docker image rm cisko6/k8s-web-hello -> na stránke vymazať z repozitára
+
+CREATING NodePort SERVICE
+	- NodePort is a way to expose a service externally by allocating a port on each node in the cluster.
+	- pomocou NodePortu dokážeme sa pripojiť na DEPLOYMENT externe, pomocou random PORTu, ktorý mu bude pridelený
+	- k expose deployment [názov_deploymentu] --type=NodePort --port=[PORT]
+	- do chromu napíšeme: [IP_NODE]:[RANDOM_PORT] (ip_node získame cez minikube ip, random_port získame cez k get svc)
+	- minikube service [názov_servicu] - taktiež sa dá pripojiť na deployment cez tento príkaz
+	- minikube service [názov_servicu] --url  - získame url 
+
+CREATING LoadBalancer SERVICE
+	- LoadBalancer service is a type of service that exposes your application to the external world while automatically distributing incoming network traffic across multiple pods.
+	- distribuuje prevádzku na všetky PODy
+	- k expose deployment [nazov_servicu] --type=LoadBalancer --port=3000
+	- k get svc - uvidíme znovu vytvorený random port
+	- v minikube v external-ip uvidíme pending, ale keby to robíme v cloud provideroch tak by to išlo
+
+k describe deployment k8s-web-hello
+	- vidíme StrategyType: RollingUpdate
+	- To znamená, že keď vydáme novú verziu aplikácie, vytvoria sa nové PODy s touto novou verziou, kde zároveň staré PODy na starej verzii budu fungovať naraz.
+	- Následne budú replaced one by one
+
+ROLLING UPDATE
+	- upravíme index.mjs
+	- docker build . -t cisko6/k8s-web-hello:2.0.0 (za hello je dvojbodka, po ktorej uvádzame verziu našej appky)
+	- docker push cisko6/k8s-web-hello:2.0.0
+	---------------------------------------------------------------
+	- zmeníme image deploymentu - k set image deployment k8s-web-hello k8s-web-hello=cisko6/k8s-web-hello:2.0.0
+	- k rollout status deploy k8s-web-hello  - uvidíme staré PODy terminate a vytvorenie nových
+	- rovnakým spôsobom vieme rolloutnuť na starú verziu
+
+Čo sa stane ked vymažeme jeden POD?
+	- vytvorí sa znovu -> lebo sme v deploymente napísali že chceme daný počet replík
+
+minikube dashboard
+
+k delete all --all  - vymaže všetko v default namespaci
+
+
+Doteraz sme robili len IMPERATIVE approach vytvárania podov, servicov, deploymentov...
+V praxi sa používa DECLARATIVE approach.
+
+k delete -f deployment.yaml -f service.yaml
+k apply -f deployment.yaml -f service.yaml
+
+TROUBLESHOOTING
+	- kubectl logs [nazov_podu] -c [nazov_kontaineru]
+	- kubectl logs web-deployment-7c499f66b6-7hlkx -c web-containers
+	- nazov podu - k get pods, nazov kontaineru - k describe pod [pod_name]
+
+	- kubectl logs [nazov_podu]
+
+kubectl get all
+k get replicaset
+
+NAMESPACES
+	- kubectl config set-context --current --namespace=[nazov namespacu]
+
+DOCKER NAMIESTO VM? 
+	- minikube start --driver=docker
+	- minikube config set driver docker
+
+
+INGRESS, INGRESS CONTROLLER
+	- minikube addons enable ingress - installs ingress controller in minikube (k8s riešenie -> Ingress-Nginx Controller)
+	- kubectl get pod -n kube-system - uvidíme nainštalovaný nginx IC
+
+	
+Prečo kubernetes má POD a nie len čisto kontajner?
+	- 1.) kvôli portom, keby su neni pody tak aplikácie bežia na jednej IP (napr 127.0.0.1)
+		- keď máme PODy, tak každý má inú IP a nemusíme si sledovať ktoré porty sú voľné
+	- 2.) to replace container runtime easily
+
+
+k get all | findstr mosquitto - grep ekvivalent vo windowse
+
+DECODE:
+	- echo -n "secret" | base64 -> linux
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

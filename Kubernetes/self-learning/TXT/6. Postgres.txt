@@ -1,0 +1,8 @@
+accessing a database -
+	- k exec -it [meno_podu] -- bin/bash
+	- psql -U [username] -d [database] -W
+	- príkazy...
+		- select version();
+		- create table my_table(a varchar(100));
+		- insert into my_table values('1234567890');
+		- select * from my_table;

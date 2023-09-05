@@ -1,0 +1,24 @@
+choco install kubernetes-helm
+https://github.com/prometheus-community/helm-charts
+PROMETHEUS
+	- helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	- helm list
+	- helm repo update
+	- helm install prometheus prometheus-community/prometheus
+	- k expose service prometheus-server --type=NodePort --port=9090 --name=prometheus-server-ext
+	- minikube service prometheus-server-ext
+
+https://github.com/grafana/helm-charts
+https://grafana.com/grafana/dashboards/6417-kubernetes-cluster-prometheus/
+GRAFANA
+	- helm repo add grafana https://grafana.github.io/helm-charts
+	- helm repo update
+	- helm install grafana grafana/grafana
+	- k expose service grafana --type=NodePort --port=3000 --name=grafana-ext
+	- minikube service grafana-ext
+	- zobrazenie hesla:
+		- hore napísané - kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+		- manually - k get secret --namespace default grafana -o yaml
+			   - echo "[kľúč]" | openssl base64 -d ; echo
+	- add data source -> prometheus (server URL)
+	- lišta hore -> import dashboard -> 6417 -> vybrať prometheus -> import
