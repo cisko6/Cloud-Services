@@ -1,0 +1,28 @@
+Orchestration tools - Kubernetes, ECS
+
+AWS proprietary - ECS, Fargate
+Open-source - Kubernetes
+
+ECS
+	- (Elastic Container Service)
+	- ECS Cluster - control plane
+	- containers must run on virtual machines -> EC2 instances
+	- EC2 instance obsahuje - Container Runtime, ECS Agent (to communicate with control plane)
+	- ECS automatizuje containers, ale stále musíme manuálne - vytvoriť EC2, pripojiť ich k ECS clustru, check if enough resources
+
+Fargate
+	- alternative to EC2 instances
+	- dáme Fargatu kontajner, on si zistí koľko potrebuje na to resources a vytvorí server s danými resources
+	- pay only for what you use
+
+EKS
+	- (Elastic Kubernetes Service)
+	- managed kubernetes cluster by AWS (AWS manages master nodes)
+	- Worker Nodes - 1) self-managed - EC2 instances
+			 2) semi-managed - Nodegroups - groupovanie worker nodes - best practice
+			 3) fully-managed- Fargate
+
+ECR
+	- (Elastic Container Registry)
+	- alternative to DockerHub
+	- store, manage and deploy docker container images

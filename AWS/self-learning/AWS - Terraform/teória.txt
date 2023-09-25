@@ -1,0 +1,153 @@
+https://www.youtube.com/watch?v=SLB_c_ayRMo&t=5608s
+
+AKIAZGPH7PNHMA4DDMMQ
+dhVwr4dirSHFyjwkhx69Turnq9xvH/Fs9O8r+yqL
+
+terraform init
+terraform plan
+terraform apply (terraform apply --auto-approve)
+terraform destroy
+
+terraform output
+terraform refresh
+terraform state list -> list of all resources that we created
+terraform state show [one of the listed resources] -> details
+
+terraform destroy -target <nazov resourcu>	-> destroyne iba jeden resource
+terraform apply -target <nazov resourcu>	-> applyne iba jeden resource
+
+SECURITY 
+	AWS CREATE ACCESS KEY
+		- profile -> Security Credentials -> Access keys -> Create
+
+	ABY SME NEMUSELI POUZIT ACCESS KEY IN TERRAFORM
+		- stiahnuť aws cli -> aws --version
+		- IAM -> create user -> meno -> attach policies directly -> AdministratorAccess -> create user
+		- click on your user -> Security Credentials -> create access key
+		- CMD windows -> aws configure -> key -> secret -> eu-central-1 -> [enter]
+
+
+COMMENT MULTIPLE LINES
+	- SK klavesnica -> CTRL + =
+	- dá sa zmeniť cez file -> preferences -> keyboard shortcuts -> vyhľadať comment line (toggle)
+
+NÁZVY
+	- resource "aws_instance" "my-first-server" 
+	- resource "<konkrétny aws názov>" "<náš názov, ktorý platí jedine v terraforme na referenciu>"
+	
+	- až takto sa vytvárajú názvy pre daný resource -> cez TAG
+	-   tags = {
+    		Name = "production"
+  		}
+
+REFERENCOVANIE
+	- ak máme VPC a chceme vytvoriť subnetu, ktorá patrí VPC, tak subneta bude vyžadovať vpc_id
+	- vpc_id = aws_vpc.fist-vpc.id
+	- vpc_id = aws_vpc.<názov už vytvoreného VPC>.id
+
+	- pri referencovaní nemusí byť v terraforme VPC prvý, keď ho referencujeme do subnetu -> na poradí nezáleží (v niektorych situaciach ano)
+
+VARIABLES
+	Do variable bloku, vieme zadať 3 argumenty ( všetky sú optional ) -> 1) description
+						     			     2) default - defaultná hodnota
+						      			     3) type - string, boolean,.. ked pytame od usera input tak ak chceme aby bol v danom formate tak to zadame
+	- 1) ak chceme, aby užívateľovi bol vypýtaný input, tak kod vyzera nasledovne:
+		1) variable "subnet-IP" {
+  			description = "cidr block for subnet"
+			}
+		- ďalej v subnete... cidr_block = var.subnet-IP
+		- pri destroyi taktiež musíme zadať túto variable -> resp pýta to, ale nemusíme ju zadať správne na to aby destroy bol uspešný
+
+		- vieme zadať taktiež argumenty v terraform CMD line.
+			- terraform apply -var "subnet-IP=10.0.1.0/24"
+
+		2) vieme v .tf file aj manualne nastaviť IP cez default
+			- variable "subnet-IP" {
+  				default = "10.0.1.0/24"
+				}
+		3) pýtanie konkrétneho input format
+			- variable "subnet-IP" {
+  				type = bool
+				}
+
+	- 2) TERRAFORM.TFVARS - file
+		- sem sa terraform automaticky pozerá a hľadá variables
+		- do filu -> subnet-IP = "10.0.1.0/24"
+		- ďalej v subnete... cidr_block = var.subnet-IP
+
+		- ak máme viacero file-ov na premenné, môžeme vytvoriť nové files s príponou .tfvars
+		- terraform apply -var-file example.tfvars -> len musíme explicitne zadať pri terraform apply
+
+		1) LIST OF STRINGS AS A VARIABLE
+			- subnet-IP = ["10.0.1.0/24", "10.0.2.0/24"] -> v terraform.tfvars
+			- .tf file resource subnet:
+				- musíme ponechať variable v .tf file
+					- variable "subnet_IP" {}
+				- v subnete
+					- cidr_block = var.subnet_IP[0] 
+		1) LIST OF OBJECTS AS A VARIABLE
+			- terraform.tfvars -> subnet_IP = [{cidr_block = "10.0.1.0/24", Name = "test-subnet"}]
+			- .tf file resource subnet:
+				- musíme ponechať variable v .tf file
+					- variable "subnet_IP" {}
+				- cidr_block = var.subnet_IP[0].cidr_block
+				- Name = var.subnet_IP[0].Name
+
+
+OUTPUTS
+	- terraform output -> printne output
+	- ak nechceme dávať TERRAFORM APPLY, lebo môže sa stať niečo zlé, môžeme printnut output bez aplikovana pomocou TERRAFORM REFRESH
+	- output "<nazov outputu>" {
+  		value = <to čo chceme vypísať, z terraform state show <instance napr>>
+		}
+	- output "private-ubuntu-IP-address" {
+  		value = aws_instance.ubuntu.private_ip
+		}
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+AWS NETWORKING - https://www.youtube.com/watch?v=XZbvQWkpJTI
+
+SUBNETS
+	- ak subnet má Internet Gateway, tak sa stáva public subnetou
+	- ak subnet má NAT Gateway, tak je private subnetou
+
+ROUTE TABLE
+	- is typically used to control the routing of traffic leaving a subnet within your Virtual Private Cloud (VPC)
+NAT
+	- Keď chceme mať on-premise datacentrum a aws cloud ako zálohu dát, tak môžme použiť SITE-TO-SITE VPN -> na AWS VGW a na datacentre router (CGW - customer gateway)
+		- Keď sa vytvoria tieto gatewaye môžeme vytvoriť 1) IPSec VPN tunel -> tento tunel je secure, ale nema moc reliable connectivity
+							         2) AWS DIRECT CONNECT - ak chceme consistent bandwidth a private connectivity to AWS 
+	- Práca z domu, kde chceme prístup do celej siete AWS - CLIENT VPN ENDPOINTS -> na client mašine vyžaduje OpenVPN 
+
+VPC PEERING
+	- prepojenie dvoch VPCs
+	- možná konektivita in private subnets
+	- nie je TRANZITNY! ked mame VPC 1,2 a 3 tak 1 nemôže komunikovať s 3 -> musí sa taktiež prepojiť 1 s 3 (MESH topology)
+	- tento problém rieši transit gateway
+
+TRANSIT GATEWAY
+	- funguje na štýl Hub and spoke -> sú k nemu pripojené všetky VPCs
+
+VPC ENDPOINT GATEWAY
+	- keď máme S3/DynamoDB(úložisko) v tomto istom regione
+	- tym pádom z private subnety sa vie dostať cez VPC endpoint gateway do S3
+
+VPC ENDPOINT INTERFACE
+	- keď sa chceme pripojiť na hocijaký iný aws service (SNS, SES, CloudWatch,..) v tom istom regione
+
+PRIVATE LINK
+	- prepojenie dvoch VPCs
+	- keď nechceme aby celá VPC bola prístupná k druhej VPC, ale len pár zariadení, použijeme private link
+	- private subnet -> VPC Endpoint Interface -> communication through private link -> na druhej strane network load balancer 
+
+ROUTE 53
+	- DNS service -> preklad domény na IP
+	- User napíše example.com -> Route 53 mu odpovie IPčkou -> User pošle request na IGW s danou IP
+
+
+
+
+
+
+
+
+
