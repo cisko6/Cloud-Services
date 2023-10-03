@@ -1,8 +1,5 @@
 https://www.youtube.com/watch?v=SLB_c_ayRMo&t=5608s
 
-AKIAZGPH7PNHMA4DDMMQ
-dhVwr4dirSHFyjwkhx69Turnq9xvH/Fs9O8r+yqL
-
 terraform init
 terraform plan
 terraform apply (terraform apply --auto-approve)
