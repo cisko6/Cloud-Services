@@ -18,11 +18,11 @@ resource "openstack_networking_router_v2" "router" {
 
 resource "openstack_networking_port_v2" "port_1" {
   name           = "port_1"
-  network_id     = openstack_networking_network_v2.main.id
+  network_id     = "ext-net"
   admin_state_up = "true"
 }
 
 resource "openstack_networking_router_interface_v2" "router_interface_1" {
   router_id = openstack_networking_router_v2.router.id
-  port_id = openstack_networking_port_v2.port_1.id
+  subnet_id = openstack_networking_subnet_v2.subnet_1.id
 }

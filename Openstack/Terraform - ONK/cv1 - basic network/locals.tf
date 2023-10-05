@@ -8,4 +8,3 @@ locals {
   }
   domain_name   = "admin_domain"
 }
-

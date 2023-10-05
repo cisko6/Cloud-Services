@@ -17,3 +17,7 @@ AWS - Terraform/self-learning/3. bastion host/.terraform/providers/registry.terr
 *.backup
 *.hcl
 *.exe
+*.info
+*.md
+*.md
+Openstack/Terraform - ONK/.terraform/providers/registry.terraform.io/terraform-provider-openstack/openstack/1.51.1/windows_386/LICENSE
