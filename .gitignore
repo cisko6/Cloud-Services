@@ -1,18 +1,3 @@
-
-AWS - Terraform/self-learning/1. basic conf/.terraform.lock.hcl
-AWS - Terraform/self-learning/1. basic conf/.terraform/providers/registry.terraform.io/hashicorp/aws/5.16.1/windows_amd64/terraform-provider-aws_v5.16.1_x5.exe
-AWS - Terraform/self-learning/1. basic conf/terraform.tfstate
-AWS - Terraform/self-learning/1. basic conf/terraform.tfstate.backup
-AWS - Terraform/self-learning/2. web server/diego na nete/.terraform.lock.hcl
-AWS - Terraform/self-learning/2. web server/diego na nete/.terraform/providers/registry.terraform.io/hashicorp/aws/5.16.1/windows_amd64/terraform-provider-aws_v5.16.1_x5.exe
-AWS - Terraform/self-learning/2. web server/diego na nete/terraform.tfstate
-AWS - Terraform/self-learning/2. web server/diego na nete/terraform.tfstate.backup
-AWS - Terraform/self-learning/2. web server/ja/.terraform.lock.hcl
-AWS - Terraform/self-learning/2. web server/ja/.terraform/providers/registry.terraform.io/hashicorp/aws/5.16.1/windows_amd64/terraform-provider-aws_v5.16.1_x5.exe
-AWS - Terraform/self-learning/2. web server/ja/terraform.tfstate
-AWS - Terraform/self-learning/2. web server/ja/terraform.tfstate.backup
-AWS - Terraform/self-learning/3. bastion host/.terraform.lock.hcl
-AWS - Terraform/self-learning/3. bastion host/.terraform/providers/registry.terraform.io/hashicorp/aws/5.16.2/windows_amd64/terraform-provider-aws_v5.16.2_x5.exe
 *.tfstate
 *.backup
 *.hcl
