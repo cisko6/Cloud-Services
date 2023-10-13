@@ -13,3 +13,7 @@ variable "tenant_name" {
 variable "auth_url" {
   type = string
 }
+
+variable "key_name" {
+  type = string
+}
