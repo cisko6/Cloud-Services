@@ -17,3 +17,5 @@ variable "auth_url" {
 variable "key_name" {
   type = string
 }
+
+variable "instance_settings" {}

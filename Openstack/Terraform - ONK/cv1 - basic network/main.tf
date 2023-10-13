@@ -68,12 +68,22 @@ resource "openstack_compute_floatingip_associate_v2" "public_floating_ip_associa
 }
 ##########################################################################################
 
+data "template_file" "bastion_data" {
+  depends_on = [openstack_compute_instance_v2.private_instance]
+  template   = file("user_data_script.sh")
+  vars = {
+    IP_addr = openstack_compute_instance_v2.private_instance.access_ip_v4
+  }
+}
+
 resource "openstack_compute_instance_v2" "bastion_instance" {
-  name            = "bastion_instance"
-  image_name      = "ubuntu-22.04-KIS"
-  flavor_name     = "1c05r8d"
+  name            = var.instance_settings[1].name
+  image_name      = var.instance_settings[1].image_name
+  flavor_name     = var.instance_settings[1].flavor_name
   key_pair        = var.key_name
   security_groups = ["default"]
+  user_data       = data.template_file.bastion_data.rendered
+  depends_on      = [data.template_file.bastion_data]
 
   network {
     port = openstack_networking_port_v2.bastion_priv_port.id
@@ -81,9 +91,9 @@ resource "openstack_compute_instance_v2" "bastion_instance" {
 }
 
 resource "openstack_compute_instance_v2" "private_instance" {
-  name            = "private_instance"
-  image_name      = "ubuntu-22.04-KIS"
-  flavor_name     = "1c05r8d"
+  name            = var.instance_settings[0].name
+  image_name      = var.instance_settings[0].image_name
+  flavor_name     = var.instance_settings[0].flavor_name
   key_pair        = var.key_name
   security_groups = ["default"]
 
@@ -91,3 +101,21 @@ resource "openstack_compute_instance_v2" "private_instance" {
     port = openstack_networking_port_v2.private_port.id
   }
 }
+
+# resource "openstack_compute_instance_v2" "multiple_instances" {
+#   count = 2
+#   name            = var.instance_settings[count.index].name
+#   image_name      = var.instance_settings[count.index].image_name
+#   flavor_name     = var.instance_settings[count.index].flavor_name
+#   key_pair        = var.key_name
+#   security_groups = ["default"]
+#   #depends_on = count.index == 1 ? [data.template_file.bastion_data] : []
+#   #user_data = count.index == 1 ? data.template_file.bastion_data.rendered : null
+#   #user_data = count.index == 1 ? file("user_data_script.sh") : null
+#   TOTO VYSKUSAT -> user_data = count.index == 0 ? templatefile("${path.module}/user_data/your-user-data-script.sh", {}) : null
+
+
+#   network {
+#     port = count.index == 1 ? openstack_networking_port_v2.bastion_priv_port.id : openstack_networking_port_v2.private_port.id
+#   }
+# }
