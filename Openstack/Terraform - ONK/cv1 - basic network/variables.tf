@@ -19,3 +19,7 @@ variable "key_name" {
 }
 
 variable "instance_settings" {}
+
+variable "create_key" {
+  type = bool
+}

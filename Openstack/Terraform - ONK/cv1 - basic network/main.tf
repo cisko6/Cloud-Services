@@ -57,6 +57,7 @@ resource "openstack_networking_port_v2" "private_port" {
     subnet_id = openstack_networking_subnet_v2.private_subnet.id
   }
 }
+
 ##########################################################################################
 resource "openstack_networking_floatingip_v2" "public_floating_ip" {
   pool = "ext-net-154"
@@ -68,6 +69,26 @@ resource "openstack_compute_floatingip_associate_v2" "public_floating_ip_associa
 }
 ##########################################################################################
 
+resource "openstack_compute_keypair_v2" "test_pcBeast" {
+  count = var.create_key ? 1 : 0
+  name = var.key_name
+  public_key = tls_private_key.rsa[count.index].public_key_openssh
+}
+
+resource "tls_private_key" "rsa" {
+  count = var.create_key ? 1 : 0
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "local_file" "rsa_private_key" {
+  count = var.create_key ? 1 : 0
+  content  = tls_private_key.rsa[count.index].private_key_openssh
+  filename = var.key_name
+}
+
+###
+
 data "template_file" "bastion_data" {
   depends_on = [openstack_compute_instance_v2.private_instance]
   template   = file("user_data_script.sh")
@@ -75,6 +96,7 @@ data "template_file" "bastion_data" {
     IP_addr = openstack_compute_instance_v2.private_instance.access_ip_v4
   }
 }
+
 
 resource "openstack_compute_instance_v2" "bastion_instance" {
   name            = var.instance_settings[1].name
@@ -101,6 +123,7 @@ resource "openstack_compute_instance_v2" "private_instance" {
     port = openstack_networking_port_v2.private_port.id
   }
 }
+
 
 # resource "openstack_compute_instance_v2" "multiple_instances" {
 #   count = 2
