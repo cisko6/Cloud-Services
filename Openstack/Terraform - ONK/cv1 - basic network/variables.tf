@@ -23,3 +23,7 @@ variable "instance_settings" {}
 variable "create_key" {
   type = bool
 }
+
+# variable "CIDR" {
+#   type = string
+# }

@@ -22,6 +22,11 @@ resource "openstack_networking_subnet_v2" "private_subnet" {
   cidr       = "192.168.10.0/24"
   ip_version = 4
 }
+
+# module "network" {
+#   source = "./modules/network"
+# }
+
 ##########################################################################################
 resource "openstack_networking_router_v2" "router_1" {
   name                = "router_1"
@@ -70,19 +75,19 @@ resource "openstack_compute_floatingip_associate_v2" "public_floating_ip_associa
 ##########################################################################################
 
 resource "openstack_compute_keypair_v2" "test_pcBeast" {
-  count = var.create_key ? 1 : 0
-  name = var.key_name
+  count      = var.create_key ? 1 : 0
+  name       = var.key_name
   public_key = tls_private_key.rsa[count.index].public_key_openssh
 }
 
 resource "tls_private_key" "rsa" {
-  count = var.create_key ? 1 : 0
+  count     = var.create_key ? 1 : 0
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
 resource "local_file" "rsa_private_key" {
-  count = var.create_key ? 1 : 0
+  count    = var.create_key ? 1 : 0
   content  = tls_private_key.rsa[count.index].private_key_openssh
   filename = var.key_name
 }
