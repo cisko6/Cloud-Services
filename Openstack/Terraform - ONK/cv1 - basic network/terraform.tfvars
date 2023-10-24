@@ -1,6 +1,6 @@
 username   = "4"
 password   = ""
-key_name   = "test_pcBeast"
+key_name   = "test-ntbk"
 create_key = false
 
 tenant_name = "ONPK_4"

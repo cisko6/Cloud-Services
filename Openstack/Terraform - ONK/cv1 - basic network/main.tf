@@ -27,7 +27,7 @@ resource "openstack_networking_subnet_v2" "private_subnet" {
 #   source = "./modules/network"
 # }
 
-##########################################################################################
+# ##########################################################################################
 resource "openstack_networking_router_v2" "router_1" {
   name                = "router_1"
   admin_state_up      = true
