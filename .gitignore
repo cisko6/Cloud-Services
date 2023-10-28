@@ -5,3 +5,5 @@
 *.info
 *.md
 Openstack/Terraform - ONK/.terraform/providers/registry.terraform.io/terraform-provider-openstack/openstack/1.51.1/windows_386/LICENSE
+*.pem
+Openstack/Terraform - ONK/test123/.terraform/providers/registry.terraform.io/terraform-provider-openstack/openstack/1.53.0/windows_amd64/LICENSE
