@@ -127,7 +127,8 @@ resource "null_resource" "wait_for_bastion" {
     type        = "ssh"
     host        = openstack_networking_floatingip_v2.bastion_fip.address
     user        = "ubuntu"
-    private_key = file("test_pcBeast.pem")
+    #private_key = file("test_pcBeast.pem")
+    private_key = file("${var.key_name}.pem")
   }
 
   provisioner "remote-exec" {
@@ -149,7 +150,8 @@ resource "null_resource" "wait_for_minikube" {
     type        = "ssh"
     host        = openstack_networking_floatingip_v2.bastion_fip.address
     user        = "ubuntu"
-    private_key = file("test_pcBeast.pem")
+    #private_key = file("test_pcBeast.pem")
+    private_key = file("${var.key_name}.pem")
   }
 
   provisioner "remote-exec" {

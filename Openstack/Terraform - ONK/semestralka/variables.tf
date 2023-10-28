@@ -32,10 +32,6 @@ variable "minikube_userdata" {
   type = string
 }
 
-variable "wait_script_path" {
-  type = string
-}
-
 # variable "CIDR" {
 #   type = string
 # }
