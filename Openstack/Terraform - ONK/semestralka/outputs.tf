@@ -1,11 +1,12 @@
 output "BH_public_IP" {
-  value = openstack_networking_floatingip_v2.bastion_fip.address
+  #value = openstack_networking_floatingip_v2.bastion_fip.address
+  value = module.network.BH_public_IP
 }
 
 output "BH_private_IP" {
-  value = openstack_compute_instance_v2.bastion_instance.access_ip_v4
+  value = module.compute.BH_private_IP
 }
 
 output "minikube_instance_IP" {
-  value = openstack_compute_instance_v2.minikube_instance.access_ip_v4
+  value = module.compute.minikube_instance_IP
 }
