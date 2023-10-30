@@ -103,7 +103,7 @@ data "template_file" "bastion_data" {
   }
 }
 
-data "template_file" "minikube_instance_data" {
+data "template_file" "minikube_data" {
   template = file(var.minikube_userdata)
   vars = {
     minikube_name = var.instance_settings[0].name
@@ -176,14 +176,14 @@ resource "openstack_compute_instance_v2" "bastion_instance" {
 }
 
 resource "openstack_compute_instance_v2" "minikube_instance" {
-  depends_on = [ data.template_file.minikube_instance_data ]
+  depends_on = [ data.template_file.minikube_data ]
   name            = var.instance_settings[0].name
   image_name      = var.instance_settings[0].image_name
   flavor_name     = var.instance_settings[0].flavor_name
   key_pair        = var.key_name
   security_groups = ["default"]
 
-  user_data       = data.template_file.minikube_instance_data.rendered
+  user_data       = data.template_file.minikube_data.rendered
 
   network {
     port = openstack_networking_port_v2.minikube_priv_port.id
