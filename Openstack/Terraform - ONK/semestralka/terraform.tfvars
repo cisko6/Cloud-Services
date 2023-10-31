@@ -1,6 +1,7 @@
 username   = "4"
 password   = ""
-key_name   = "test_pcBeast"
+#key_name   = "test_pcBeast"
+key_name   = "test-ntbk"
 create_key = false
 
 bastion_userdata  = "bastion_userdata.sh"

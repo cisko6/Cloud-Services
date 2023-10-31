@@ -16,6 +16,7 @@ sudo sysctl -p
 # SIGNAL ZE UZ SKONCIL SCRIPT - preto skorej lebo by sa odtrhlo SSH spojenie
 touch /tmp/user_data_bastion_complete
 
+# aby stihol nullresource zaregovat na touch
 sleep 5
 
 # ENABLE SSH TRAFFIC THROUGH BASTION HOST

@@ -19,13 +19,7 @@ module "compute" {
 
 
 resource "null_resource" "wait_for_bastion" {
-  #depends_on = [openstack_compute_floatingip_associate_v2.bastion_fip_association]
   depends_on = [ module.compute.bastion_fip_association ]
-
-  # treba počkať aby sa bootla inštancia
-  provisioner "local-exec" {
-    command = "ping 127.0.0.1 -n 16 > nul"
-  }
 
   connection {
     type        = "ssh"
