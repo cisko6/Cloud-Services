@@ -1,0 +1,6 @@
+delete container - docker ps -a | grep [nazov_kontajneru]
+		 - docker stop [ID_cntr]
+		 - docker rm [ID_cntr]
+delete image - docker rmi [ID_image]
+
+terminal kontajnera - docker exec -it [ID_cntr] /bin/sh (alebo bash)

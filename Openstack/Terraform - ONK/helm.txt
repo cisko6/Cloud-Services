@@ -1,0 +1,12 @@
+helm link PATH 			# pozera chyby
+
+helm install nginx-app test1/
+helm upgrade nginx-app test1/
+helm uninstall nginx-app
+
+# keď máme iba jeden values file
+	helm install nginx-app test1/
+
+# keď máme prod a dev namespace s inymi values
+	helm install nginx-app test1/ --values .\test1\values.yaml -f .\test1\values-dev.yaml -n dev
+

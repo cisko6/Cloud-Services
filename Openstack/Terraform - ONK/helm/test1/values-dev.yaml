@@ -1,0 +1,4 @@
+namespace: dev
+container:
+  image: nginx
+  tag: latest

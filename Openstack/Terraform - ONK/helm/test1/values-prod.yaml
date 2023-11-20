@@ -1,0 +1,4 @@
+namespace: prod
+container:
+  image: nginx
+  tag: latest

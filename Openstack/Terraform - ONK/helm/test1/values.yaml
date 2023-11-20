@@ -1,0 +1,5 @@
+namespace: helm
+appName: nginx-app
+container:
+  image: nginx
+  tag: latest
