@@ -1,5 +1,5 @@
-username   = "4"
-password   = ""
+username   = "stud4"
+password   = "onpk"
 #key_name   = "test_pcBeast"
 key_name   = "test-ntbk"
 create_key = false
