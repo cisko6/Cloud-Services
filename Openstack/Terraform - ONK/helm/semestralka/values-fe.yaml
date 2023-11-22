@@ -1,0 +1,8 @@
+name: frontend
+namespace: frontend
+replicas: 5
+image: nginx
+tag: latest
+
+serviceName: svc-frontend
+port: 80

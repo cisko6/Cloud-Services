@@ -1,0 +1,8 @@
+name: backend
+namespace: backend
+replicas: 5
+image: nginx
+tag: latest
+
+serviceName: svc-backend
+port: 80
