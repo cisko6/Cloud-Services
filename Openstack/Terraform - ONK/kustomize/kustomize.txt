@@ -1,0 +1,43 @@
+choco install kustomize
+
+kustomize build ./overlays/dev
+kustomize build ./overlays/dev | k apply -f -
+k apply -k ./overlays/dev			# another way
+
+k port-forward service/webserver-service 8888:80 -n dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
