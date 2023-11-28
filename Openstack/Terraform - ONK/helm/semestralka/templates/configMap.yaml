@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.cm_name }}
+  namespace: {{ .Values.namespace }}
+data:
+  REACT_APP_APIHOSTPORT: "{{ .Values.serviceName }}:{{ .Values.targetPort }}"
+    #                    "http://api.example.com:8080"
+  MONGO_CONN_STR: "mongodb://appbackendmongodb:27017/dynamicky_nazov_db"
+   #             "mongodb://[HOSTNAME ALEBO IP ADRESA MONGO SERVERA(mozno service backendu)]:27017/[NAZOV DATABAZY]"

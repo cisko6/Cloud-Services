@@ -5,4 +5,8 @@ image: nginx
 tag: latest
 
 serviceName: svc-backend
-port: 80
+port: 27017
+targetPort: 27017
+
+cm_name: my-configmap
+secret_name: my-secret

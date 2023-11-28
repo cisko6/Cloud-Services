@@ -22,3 +22,8 @@ spec:
             cpu: "50m"
         ports:
         - containerPort: {{ .Values.port }}
+        envFrom:
+          - configMapRef:
+              name: {{ .Values.cm_name }}
+          - secretRef:
+              name: {{ .Values.secret_name }}

@@ -9,4 +9,6 @@ spec:
     app: {{ .Values.name }}
   ports:
   - port: {{ .Values.port }}
-    #targetPort: <Target Port>
+    targetPort: {{ .Values.targetPort }}
+  #- protocol: TCP mozno toto doplnit idk
+  
