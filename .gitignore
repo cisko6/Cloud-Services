@@ -9,3 +9,4 @@ Openstack/Terraform - ONK/.terraform/providers/registry.terraform.io/terraform-p
 Openstack/Terraform - ONK/test123/.terraform/providers/registry.terraform.io/terraform-provider-openstack/openstack/1.53.0/windows_amd64/LICENSE
 Openstack/Terraform - ONK/semestralka/.terraform/providers/registry.terraform.io/terraform-provider-openstack/openstack/1.52.1/windows_amd64/LICENSE
 Openstack/Terraform - ONK/semestralka/.terraform/providers/registry.terraform.io/terraform-provider-openstack/openstack/1.53.0/windows_386/LICENSE
+Openstack/Terraform - ONK/helm/semestralka/Chart.lock

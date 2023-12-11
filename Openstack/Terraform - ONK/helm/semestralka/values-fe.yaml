@@ -3,7 +3,7 @@
 name: frontend
 namespace: frontend
 replicas: 2
-image: cisko6/frontend2 #cisko6/onpk_frontend
+image: cisko6/frontend3 #(api dns svc) #frontend2(api prazdny retazec) #cisko6/onpk_frontend (api localhost)
 tag: latest
 
 serviceName: svc-frontend
