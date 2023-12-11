@@ -1,7 +1,9 @@
+
+# frontend
 name: frontend
 namespace: frontend
-replicas: 5
-image: nginx
+replicas: 2
+image: cisko6/frontend2 #cisko6/onpk_frontend
 tag: latest
 
 serviceName: svc-frontend
@@ -10,3 +12,14 @@ targetPort: 8080
 
 cm_name: my-configmap
 secret_name: my-secret
+
+react_api: "svc-backend.backend.svc.cluster.local:80"
+#http://svc-backend.backend.svc.cluster.local:80 # 27017 
+            #http://10.99.232.27:27017
+            #http://svc-backend:27017
+
+
+isSvcFrontend: true
+
+mongodb:
+  enabled: false

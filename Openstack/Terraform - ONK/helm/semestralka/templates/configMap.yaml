@@ -4,7 +4,8 @@ metadata:
   name: {{ .Values.cm_name }}
   namespace: {{ .Values.namespace }}
 data:
-  REACT_APP_APIHOSTPORT: "{{ .Values.serviceName }}:{{ .Values.targetPort }}"
+  REACT_APP_APIHOSTPORT: {{ .Values.react_api }}
     #                    "http://api.example.com:8080"
-  MONGO_CONN_STR: "mongodb://appbackendmongodb:27017/dynamicky_nazov_db"
+  MONGO_CONN_STR: "mongodb://backend-mongodb:27017/platformsdb" #"mongodb://svc-backend:27017/platformsdb"
    #             "mongodb://[HOSTNAME ALEBO IP ADRESA MONGO SERVERA(mozno service backendu)]:27017/[NAZOV DATABAZY]"
+   #              mongodb+srv://username:password@cluster0.mongodb.net/databaseName

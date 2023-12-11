@@ -1,12 +1,34 @@
+
+# backend
 name: backend
 namespace: backend
-replicas: 5
-image: nginx
+replicas: 2
+image: cisko6/onpk_backend
 tag: latest
 
 serviceName: svc-backend
-port: 27017
-targetPort: 27017
+port: 80 # 27017
+targetPort: 9080 #27017
 
 cm_name: my-configmap
 secret_name: my-secret
+
+isSvcFrontend: false # nechapem malo by byt false len zadanie je divne
+react_api: http://svc-backend.backend.svc.cluster.local:27017 # no need
+
+# mongo
+mongodb:
+  enabled: true
+  connectionString: "mongodb://backend-mongodb:27017/platformsdb" # "mongodb://svc-backend:27017/platformsdb"
+  auth:
+    username: "username"
+    password: "password"
+    usernames: ["username"]  # Add this line with your desired username
+    databases: ["platformsdb"]  # Add this line with your desired database name
+  extraEnvVars:
+    - name: MONGO_CONN_STR
+      value: "mongodb://backend-mongodb:27017/platformsdb"
+    - name: MONGO_USERNAME
+      value: "username"
+    - name: MONGO_PASSWORD
+      value: "password"
