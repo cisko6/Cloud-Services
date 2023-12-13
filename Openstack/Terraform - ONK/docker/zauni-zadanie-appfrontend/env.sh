@@ -11,7 +11,7 @@ echo "}" >> $CONFFILE
 cat $CONFFILE
 
 # ignore the rest of file
-exit
+
 
 ## Recreate config file
 #echo env.sh script started...

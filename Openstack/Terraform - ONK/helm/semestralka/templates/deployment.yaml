@@ -21,7 +21,7 @@ spec:
             memory: "128Mi"
             cpu: "50m"
         ports:
-        - containerPort: {{ .Values.targetPort }} #{{ .Values.port }}
+        - containerPort: {{ .Values.targetPort }}
         envFrom:
           - configMapRef:
               name: {{ .Values.cm_name }}

@@ -3,18 +3,18 @@
 name: backend
 namespace: backend
 replicas: 2
-image: cisko6/onpk_backend
+image: cisko6/backendubuntu2 #ma alpine  #cisko6/backendubuntu #cisko6/onpk_backend
 tag: latest
 
 serviceName: svc-backend
-port: 80 # 27017
-targetPort: 9080 #27017
+port: 9080
+targetPort: 9080
 
 cm_name: my-configmap
 secret_name: my-secret
 
-isSvcFrontend: false # nechapem malo by byt false len zadanie je divne
-react_api: http://svc-backend.backend.svc.cluster.local:27017 # no need
+isSvcFrontend: false
+react_api: "" # no need
 
 # mongo
 mongodb:

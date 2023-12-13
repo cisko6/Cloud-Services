@@ -4,7 +4,9 @@ metadata:
   name: {{ .Values.serviceName }}
   namespace: {{ .Values.namespace }}
 spec:
+{{- if .Values.isSvcFrontend }}
   type: NodePort
+{{- end }}
   selector:
     app: {{ .Values.name }}
   ports:
@@ -12,8 +14,6 @@ spec:
     targetPort: {{ .Values.targetPort }}
 {{- if .Values.isSvcFrontend }}
     nodePort: 31111
-{{- else }}
-    nodePort: 32222
 {{- end }}
   #- protocol: TCP mozno toto doplnit idk
   
