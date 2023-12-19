@@ -1,9 +1,9 @@
 
 # frontend
 name: frontend
-namespace: frontend
-replicas: 2
-image: cisko6/frontendubuntu2 # (entrypoint env) #cisko6/frontendubuntu #(ubuntu build) #cisko6/frontend3 #(api dns svc) #frontend2(api prazdny retazec) #cisko6/onpk_frontend (api localhost)
+namespace: helm #frontend
+replicas: 1
+image: cisko6/frontendubuntu2 #(entrypoint env) #cisko6/frontendubuntu #(ubuntu build) #cisko6/frontend3 #(api dns svc) #frontend2(api prazdny retazec) #cisko6/onpk_frontend (api localhost)
 tag: latest
 
 serviceName: svc-frontend
@@ -13,7 +13,7 @@ targetPort: 8080
 cm_name: my-configmap
 secret_name: my-secret
 
-react_api: "svc-backend.backend.svc.cluster.local:9080" #32222" #:80"
+react_api: "svc-backend.helm.svc.cluster.local:32222"  #9080 #32222" #:80"
 #http://svc-backend.backend.svc.cluster.local:80 # 27017 
             #http://10.99.232.27:27017
             #http://svc-backend:27017

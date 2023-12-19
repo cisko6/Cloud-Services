@@ -1,8 +1,8 @@
 
 # backend
 name: backend
-namespace: backend
-replicas: 2
+namespace: helm #backend
+replicas: 1
 image: cisko6/backendubuntu2 #ma alpine  #cisko6/backendubuntu #cisko6/onpk_backend
 tag: latest
 
@@ -16,6 +16,8 @@ secret_name: my-secret
 isSvcFrontend: false
 react_api: "" # no need
 
+
+
 # mongo
 mongodb:
   enabled: true
@@ -27,8 +29,10 @@ mongodb:
     databases: ["platformsdb"]  # Add this line with your desired database name
   extraEnvVars:
     - name: MONGO_CONN_STR
-      value: "mongodb://backend-mongodb:27017/platformsdb"
+      value: "mongodb://username:password@backend-mongodb:27017/platformsdb" #"mongodb://backend-mongodb:27017/platformsdb"
     - name: MONGO_USERNAME
       value: "username"
     - name: MONGO_PASSWORD
       value: "password"
+
+# mongosh -u username -p password "mongodb://backend-mongodb.backend.svc.cluster.local:27017/platformsdb"

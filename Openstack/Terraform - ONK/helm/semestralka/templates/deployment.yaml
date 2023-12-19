@@ -16,10 +16,6 @@ spec:
       containers:
       - name: {{ .Values.name }}
         image: "{{ .Values.image }}:{{ .Values.tag }}"
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "50m"
         ports:
         - containerPort: {{ .Values.targetPort }}
         envFrom:

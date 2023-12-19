@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
 {{- if .Values.isSvcFrontend }}
+  type: NodePort #LoadBalancer
+{{- else }}
   type: NodePort
 {{- end }}
   selector:
@@ -14,6 +16,8 @@ spec:
     targetPort: {{ .Values.targetPort }}
 {{- if .Values.isSvcFrontend }}
     nodePort: 31111
+{{- else }}
+    nodePort: 32222
 {{- end }}
-  #- protocol: TCP mozno toto doplnit idk
+ #- protocol: TCP mozno toto doplnit idk
   

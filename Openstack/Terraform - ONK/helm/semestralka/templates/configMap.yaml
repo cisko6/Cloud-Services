@@ -1,3 +1,4 @@
+{{- if .Values.isSvcFrontend }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,3 +10,4 @@ data:
   MONGO_CONN_STR: "mongodb://backend-mongodb:27017/platformsdb" #"mongodb://svc-backend:27017/platformsdb"
    #             "mongodb://[HOSTNAME ALEBO IP ADRESA MONGO SERVERA(mozno service backendu)]:27017/[NAZOV DATABAZY]"
    #              mongodb+srv://username:password@cluster0.mongodb.net/databaseName
+{{- end }}
