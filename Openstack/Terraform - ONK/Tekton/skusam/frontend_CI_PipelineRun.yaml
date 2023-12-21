@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: frontend-clone-build-push-run-
+  namespace: helm
+spec:
+  pipelineRef:
+    name: frontend-clone-build-push
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+  params:
+    - name: repo-url
+      value: https://github.com/cisko6/onpk_K8s-docker-helm-tekton-openstack.git
+      #git@github.com:cisko6/onpk_K8s-docker-helm-tekton-openstack.git
+    - name: image-reference
+      value: cisko6/tekton-frontend
+    - name: dockerfile
+      value: Docker/zauni-zadanie-appfrontend/Dockerfile #python-app/Dockerfile
+    - name: context
+      value: Docker/zauni-zadanie-appfrontend
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    - name: docker-credentials
+      secret:
+        secretName: docker-credentials

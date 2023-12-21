@@ -1,7 +1,8 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: build-and-push-pipeline
+  name: backend-build-and-push-pipeline
+  namespace: helm
 spec:
   tasks:
   - name: git-clone-task

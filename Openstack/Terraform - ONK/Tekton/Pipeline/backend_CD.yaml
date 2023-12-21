@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: backend-cd-pipeline
+  namespace: helm
+spec:
+  tasks:
+  - name: git-clone-helm-charts
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: shared-workspace
+    params:
+    - name: url
+      value: https://github.com/cisko6/onpk_K8s-docker-helm-tekton-openstack.git
+    - name: revision
+      value: main
+    - name: subdirectory
+      value: Helm_charts/ # path/to/helm/charts
+
+  - name: helm-upgrade
+    taskRef:
+      name: helm-upgrade-from-source
+    workspaces:
+    - name: shared-workspace
+    params:
+    - name: releaseName
+      value: cisko6/tekton-backend:latest #your-app-release
+    - name: chartDir
+      value: semestralka/semestralka-0.1.0/semestralka #path/to/helm/charts/your-app
+    - name: valuesFile
+      value: semestralka/semestralka-0.1.0/semestralka/values-be.yaml # path to values.yaml
+    - name: namespace
+      value: helm #your-namespace
+
+  workspaces:
+  - name: shared-workspace
+    description: "Shared workspace for tasks"
