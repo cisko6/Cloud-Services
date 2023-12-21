@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflag
 # image build image - use scratch to get smallest possible size of an image
 FROM scratch
 WORKDIR /app
-COPY --from=builder /build/main /app/
+COPY --from=builder /build/main .
 EXPOSE 9080
 ENTRYPOINT ["./main"]
 

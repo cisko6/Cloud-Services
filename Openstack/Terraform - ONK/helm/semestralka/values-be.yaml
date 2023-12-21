@@ -1,4 +1,5 @@
 
+
 # backend
 name: backend
 namespace: helm #backend
@@ -16,23 +17,80 @@ secret_name: my-secret
 isSvcFrontend: false
 react_api: "" # no need
 
-
-
 # mongo
-mongodb:
-  enabled: true
-  connectionString: "mongodb://backend-mongodb:27017/platformsdb" # "mongodb://svc-backend:27017/platformsdb"
-  auth:
-    username: "username"
-    password: "password"
-    usernames: ["username"]  # Add this line with your desired username
-    databases: ["platformsdb"]  # Add this line with your desired database name
-  extraEnvVars:
-    - name: MONGO_CONN_STR
-      value: "mongodb://username:password@backend-mongodb:27017/platformsdb" #"mongodb://backend-mongodb:27017/platformsdb"
-    - name: MONGO_USERNAME
-      value: "username"
-    - name: MONGO_PASSWORD
-      value: "password"
+# mongodb:
+#   enabled: true
+#   connectionString: "mongodb://backend-mongodb:27017/platformsdb" # "mongodb://svc-backend:27017/platformsdb"
+#   auth:
+#     #username: "username"
+#     #password: "password"
+#     usernames: ["username"]  # Add this line with your desired username
+#     passwords: ["password"]
+#     databases: ["platformsdb"]  # Add this line with your desired database name
+#   extraEnvVars:
+#     - name: MONGO_CONN_STR
+#       value: "mongodb://backend-mongodb:27017/platformsdb" #"mongodb://username:password@backend-mongodb:27017/platformsdb"
+#     - name: MONGO_USERNAME
+#       value: "username"
+#     - name: MONGO_PASSWORD
+#       value: "password"
 
 # mongosh -u username -p password "mongodb://backend-mongodb.backend.svc.cluster.local:27017/platformsdb"
+
+
+
+
+mongodb:
+  databaseName: platformsdb
+  replicaCount: 1
+  version: 13.4.0
+  port: 27017
+  username: admin
+  password: password
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: false
+  initdbScripts:
+    init_script.js: |
+      db = db.getSiblingDB("platformsdb");
+      db.createUser({
+        user: "admin",
+        pwd: "password",
+        roles:[{role: "readWrite" , db:"platformsdb"}]
+      });
+      db.createCollection("platforms");
+      db.platforms.insertMany(
+       [
+         {
+              "name": "openshift",
+              "codedetail": {
+                  "usecase": "Container platform",
+                  "rank": 12,
+                  "homepage": "https://openshift.com",
+                  "download": "https://developers.redhat.com/products/codeready-containers/overview",
+                  "votes": 0
+              }
+          },
+          {
+              "name": "kubernetes",
+              "codedetail": {
+                  "usecase": "Container orchestration platform ",
+                  "rank": 38,
+                 "homepage": "https://kubernetes.com",
+                  "download": "https://kubernetes.io/docs/tasks/tools/install-minikube/",
+                  "votes": 0
+              }
+          },
+          {
+              "name": "rancher",
+              "codedetail": {
+                  "usecase": "Container platform management ",
+                  "rank": 50,
+                  "homepage": "https://rancher.com/",
+                  "download": "https://github.com/rancher/rancher",
+                  "votes": 0
+              }
+          }
+        ]    
+      );
