@@ -18,13 +18,13 @@ spec:
       value: Docker/zauni-zadanie-appfrontend
     # Helm parameters
     - name: chartPath
-      value: Helm
+      value: Helm_charts/semestralka
     - name: releaseName
       value: helm-frontend
     - name: helmNamespace
       value: helm
     - name: valuesFile
-      value: Helm/values-fe.yaml
+      value: Helm_charts/semestralka/semestralka-0.1.0/semestralka/values-fe.yaml
   workspaces:
   - name: docker-credentials
     secret:
