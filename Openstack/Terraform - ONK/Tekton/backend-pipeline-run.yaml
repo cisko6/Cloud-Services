@@ -1,0 +1,39 @@
+
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: be-clone-build-push-deploy-run-
+  namespace: helm
+spec:
+  pipelineRef:
+    name: clone-build-push-deploy
+  params:
+    - name: repo-url
+      value: https://github.com/cisko6/onpk_K8s-docker-helm-tekton-openstack.git
+    - name: image-reference
+      value: cisko6/tekton-backend
+    - name: dockerfile
+      value: Docker/zauni-zadanie-appbackend/Dockerfile
+    - name: context
+      value: Docker/zauni-zadanie-appbackend
+    # Helm parameters
+    - name: chartPath
+      value: Helm
+    - name: releaseName
+      value: helm-backend
+    - name: helmNamespace
+      value: helm
+    - name: valuesFile
+      value: Helm/values-be.yaml
+  workspaces:
+  - name: docker-credentials
+    secret:
+      secretName: docker-credentials
+  - name: shared-data
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

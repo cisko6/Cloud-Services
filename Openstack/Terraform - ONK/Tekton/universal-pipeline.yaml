@@ -1,8 +1,9 @@
+# nepotrebujem git credentials ked mam verejny repo, ci?
 
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: frontend-clone-build-push
+  name: clone-build-push-deploy
   namespace: helm
 spec:
   description: |
@@ -17,6 +18,17 @@ spec:
       type: string
     - name: context
       type: string
+
+    # Helm parameters
+    - name: chartPath
+      type: string
+    - name: releaseName
+      type: string
+    - name: helmNamespace
+      type: string
+    - name: valuesFile
+      type: string
+
   workspaces:
     - name: shared-data
     - name: docker-credentials
@@ -30,8 +42,8 @@ spec:
         - name: revision
           value: main
       workspaces:
-        - name: output
-          workspace: shared-data
+      - name: output
+        workspace: shared-data
 
     - name: build-push
       runAfter: ["fetch-source"]
@@ -44,15 +56,13 @@ spec:
           value: $(params.dockerfile)
         - name: CONTEXT
           value: $(params.context)
-        - name: SKIP_PUSH
-          value: false
         - name: FORMAT
           value: docker
       workspaces:
-        - name: source
-          workspace: shared-data
-        - name: dockerconfig
-          workspace: docker-credentials
+      - name: dockerconfig
+        workspace: docker-credentials
+      - name: source
+        workspace: shared-data
 
     - name: update-image-version
       runAfter: ["build-push"]
@@ -63,12 +73,12 @@ spec:
             script: |
               #!/usr/bin/env sh
               apk add --no-cache yq
-              yq -i 'image = "$(params.IMAGE)"' $(workspaces.source.path)/Helm/values-fe.yaml
+              yq -i 'image = "$(params.IMAGE)"' $(workspaces.source.path)/$(params.valuesFile)
           - name: check
             image: alpine:3.18
             command: ["cat"]
             args:
-              - "$(workspaces.source.path)/Helm/values-fe.yaml"
+              - "$(workspaces.source.path)/$(params.valuesFile)"
         params:
           - name: IMAGE
       params:
@@ -78,16 +88,21 @@ spec:
         - name: source
           workspace: shared-data
 
-    # - name: deploy-app
-    #   runAfter: ["update-image-version"]
-    #   taskSpec:
-    #     steps:
-    #       - name: deploy-to-k8s
-    #         image: bitnami/kubectl:latest
-    #         args:
-    #           - "apply"
-    #           - "-f"
-    #           - "$(workspaces.source.path)/k8s/python-demo-app/"
-    #   workspaces:
-    #     - name: source
-    #       workspace: shared-data
+    - name: helm-upgrade
+      runAfter: ["update-image-version"]
+      taskRef:
+        name: helm-upgrade-from-source
+      params:
+        - name: sourceRepo
+          value: $(params.repo-url)
+        - name: chartPath
+          value: $(params.chartPath)
+        - name: releaseName
+          value: $(params.releaseName)
+        - name: namespace
+          value: $(params.helmNamespace)
+        - name: valuesFile
+          value: $(params.valuesFile)
+      workspaces:
+        - name: source
+          workspace: shared-data
