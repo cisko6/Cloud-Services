@@ -1,0 +1,32 @@
+helm uninstall backend -n helm; helm uninstall frontend -n helm
+helm install backend . --values .\values-be.yaml -n helm ; helm install frontend . --values .\values-fe.yaml -n helm
+
+
+INSTALLATION
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml # pipeline
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml # dasboard
+choco install tektoncd-cli # tkn
+
+SPUSTENIE DASHBOARD
+kubectl --namespace tekton-pipelines port-forward svc/tekton-dashboard 9097:9097 #freezed window
+Start-Process kubectl -ArgumentList "--namespace tekton-pipelines port-forward svc/tekton-dashboard 9097:9097" -NoNewWindow #môžeme písať aj nadalej
+
+
+
+HELM REPOSITAR
+	- na stranke zapnut pages
+		- settings -> pages -> /root napr
+	- helm package .
+	- helm repo index . --url https://github.com/cisko6/helm-chart --merge index.yaml
+
+	- na strane užívateľa: 
+		- helm repo add helm-chart https://cisko6.github.io/helm-chart
+		- helm search repo helm-chart
+		- helm install [release-name] helm-chart/[chart-name] --version [version]
+
+
+
+kubectl apply -f your-pipeline.yaml
+tkn pipeline start <pipeline-name> -n <namespace>
+
+
