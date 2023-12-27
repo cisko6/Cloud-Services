@@ -1,0 +1,53 @@
+# Minikube instance
+minikube start --profile=twonodes --nodes=2 
+minikube profile list
+minikube profile <profilename> #set default profile
+
+# Cluster status, view configuration, node access
+minikube status
+kubectl cluster-info
+kubectl config view
+
+minikube node list
+kubectl get nodes -o wide
+
+minikube ssh --node twonodes
+minikube ssh --node twonodes-m02
+
+minikube stop
+minikube delete
+
+# Events, logs
+kubectl get events -n <namespace>
+kubectl get events –A
+kubectl logs -f <object> -n <namespace>
+
+# Minikube addons
+minikube addons list
+minikube addons enable dashboard
+minikube addons enable metrics-server
+minikube addons enable ingress
+kubectl get all -A
+
+# Minikube dashboard
+minikube dashboard –url [--port 8080]
+# port forward
+hostname –I #remote machine – to get remoteIP
+ssh -L 8080:127.0.0.1:8080 <user>@<remoteIP> #local machine
+ - Dashboard URL: http://127.0.0.1:8080/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/
+
+# Start container for testing
+kubectl run --rm -it test --image=busybox -- /bin/sh
+
+# Enter existing pod/container
+kubectl exec <podname> -it -- /bin/sh 
+
+# Volumes support on multi-node cluster with minikube
+minikube addons enable volumesnapshots
+minikube addons enable csi-hostpath-driver
+minikube addons disable storage-provisioner
+minikube addons disable default-storageclass
+kubectl patch storageclass csi-hostpath-sc -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}’
+
+
+
